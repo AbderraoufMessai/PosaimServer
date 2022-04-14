@@ -2,21 +2,25 @@ import Vue from "vue";
 import Vuex from "vuex";
 
 const { ipcRenderer, remote } = require("electron");
-const getMAC = require("getmac");
+const { machineIdSync } = require("node-machine-id");
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
     license: null,
-    mac: getMAC.default(),
+    machineId: machineIdSync(true),
     server_is_running: false,
+    data: null,
+    port: process.env.VUE_APP_API_PORT,
   },
   getters: {
     valid: (state) => (state.license ? state.license.errorCode === 0 : false),
     license: (state) => state.license,
-    mac: (state) => state.mac,
+    machineId: (state) => state.machineId,
+    port: (state) => state.port,
     serverIsRunning: (state) => state.server_is_running,
+    data: (state) => state.data,
   },
   mutations: {
     setData: (state, { name, data }) => {
@@ -64,6 +68,45 @@ export default new Vuex.Store({
     async openConsole() {
       await ipcRenderer.send("open-console");
     },
-    async exportDatabase() {},
+    async exportDatabase({ commit }) {
+      let errors = null;
+      await Vue.axios
+        .get("api/data/")
+        .then((response) => {
+          commit("setData", { name: "data", data: response.data });
+        })
+        .catch((error) => {
+          errors = error;
+        });
+      return errors;
+    },
+    async importDatabase(store, data) {
+      let errors = null;
+      await Vue.axios.post("api/data/", { data }).catch((error) => {
+        errors = error;
+      });
+      return errors;
+    },
+    async clearDatabase() {
+      let errors = null;
+      await Vue.axios.delete("api/data/").catch((error) => {
+        errors = error;
+      });
+      return errors;
+    },
+    async createAdmin(store, data) {
+      let errors = null;
+      await Vue.axios.post("api/administration/", data).catch((error) => {
+        errors = error;
+      });
+      return errors;
+    },
+    async updateAdmin(store, data) {
+      let errors = null;
+      await Vue.axios.post("api/administration/", data).catch((error) => {
+        errors = error;
+      });
+      return errors;
+    },
   },
 });

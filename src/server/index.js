@@ -5,7 +5,7 @@ const routes = require("./routes");
 
 const app = express();
 
-app.use(cors({ origin: process.env.URL || "http://localhost:8001" }));
+app.use(cors({ origin: "*" }));
 // app.use(express.static(__dirname + '/public'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

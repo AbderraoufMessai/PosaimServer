@@ -43,7 +43,7 @@ const verifyToken = (req, res, next) => {
 };
 
 const verifyAddressMac = (req, res, next) => {
-  let mac = req.headers.mac
+  let mac = req.headers.mac;
   if (!mac) {
     return res.status(403).send({
       message: "No addresss provided!",

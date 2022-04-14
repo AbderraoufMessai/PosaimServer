@@ -34,9 +34,12 @@ export default {
   name: "NetworkView",
   data: () => ({
     ips: [],
-    port: 8000,
   }),
-  computed: {},
+  computed: {
+    port() {
+      return this.$store.getters.port;
+    },
+  },
   mounted() {
     this.getAddressIP();
   },

@@ -25,6 +25,7 @@
     "getmac": "^5.20.0",
     "jsonwebtoken": "^8.5.1",
     "license-key-gen": "^0.1.4",
+    "node-machine-id": "^1.1.12",
     "pg-hstore": "^2.3.4",
     "roboto-fontface": "*",
     "sequelize": "^6.17.0",

@@ -124,6 +124,7 @@ exports.export = (req, res) => {
 
 exports.import = (req, res) => {
   const data = req.body.data;
+  console.log(data);
   if (data) {
     isEmpty().then((is_empty) => {
       if (is_empty) {

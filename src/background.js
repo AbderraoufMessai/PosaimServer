@@ -4,7 +4,7 @@ import { app, BrowserWindow, ipcMain, protocol } from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import ShortCrypt from "short-crypt";
-import getMAC from "getmac";
+import { machineIdSync } from "node-machine-id";
 import { validateLicense } from "license-key-gen";
 import { closeServer, startServer } from "./server";
 import { Database } from "./server/models";
@@ -43,11 +43,11 @@ async function verify_key(key) {
       if (now > expiration) {
         response = { errorCode: 1006, message: "license has expired" };
       } else {
-        const mac = getMAC();
+        const machineId = machineIdSync(true);
         const secret_key = process.env.SECRET_KEY;
         key = key.substring(exp.length + 1);
         const data = {
-          info: { mac },
+          info: { machineId },
           prodCode: secret_key,
           appVersion: "1.0.0",
         };

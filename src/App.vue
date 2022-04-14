@@ -154,8 +154,8 @@
             >
               <v-card-text>
                 <v-text-field
-                  v-model="mac"
-                  label="Machine address"
+                  v-model="machineId"
+                  label="Machine Id"
                   append-icon="mdi-desktop-classic "
                   color="primary"
                   outlined
@@ -255,8 +255,8 @@ export default {
     });
   },
   computed: {
-    mac() {
-      return this.$store.getters.mac;
+    machineId() {
+      return this.$store.getters.machineId;
     },
     license() {
       return this.$store.getters.license;
@@ -299,7 +299,7 @@ export default {
               const error = this.license
                 ? { license: this.license.message }
                 : null;
-              if (error) {
+              if (error && this.$refs.observer) {
                 this.$refs.observer.setErrors(error);
               }
             });
