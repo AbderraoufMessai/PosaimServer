@@ -1,0 +1,12 @@
+@font-face {
+  font-family: 'digital';
+  src: local('digital'), url('~/src/assets/fonts/digital-7.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'scheherazade';
+  src: local('scheherazade'), url('~/src/assets/fonts/ScheherazadeNew-Bold.ttf');
+}
+
+// Globals
+$body-font-family: 'scheherazade', sans-serif;
+$font-size-root: 20px;
