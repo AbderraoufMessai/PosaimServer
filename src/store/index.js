@@ -10,7 +10,7 @@ export default new Vuex.Store({
   state: {
     license: null,
     machineId: machineIdSync(true),
-    server_is_running: false,
+    running: false,
     data: null,
     port: process.env.VUE_APP_API_PORT,
   },
@@ -19,7 +19,7 @@ export default new Vuex.Store({
     license: (state) => state.license,
     machineId: (state) => state.machineId,
     port: (state) => state.port,
-    serverIsRunning: (state) => state.server_is_running,
+    running: (state) => state.running,
     data: (state) => state.data,
   },
   mutations: {
@@ -53,11 +53,11 @@ export default new Vuex.Store({
     },
     async startServer({ commit }) {
       const response = await ipcRenderer.invoke("start-server");
-      await commit("setData", { name: "server_is_running", data: response });
+      await commit("setData", { name: "running", data: response });
     },
     async closeServer({ commit }) {
       const response = await ipcRenderer.invoke("close-server");
-      await commit("setData", { name: "server_is_running", data: response });
+      await commit("setData", { name: "running", data: response });
     },
     async closeWindow() {
       remote.getCurrentWindow().close();

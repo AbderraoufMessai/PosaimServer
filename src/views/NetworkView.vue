@@ -1,30 +1,55 @@
 <template>
-  <v-card outlined class="rounded-xl" elevation="10">
-    <v-card-title> Network </v-card-title>
+  <v-card outlined class="rounded-xl">
     <v-card-text>
-      <v-select
-        v-model="ips"
-        :items="ips"
-        label="Address Ip"
-        append-icon="mdi-server-network"
-        chips
-        color="primary"
-        multiple
-        readonly
-        outlined
-        rounded
-      />
-      <v-select
-        v-model="port"
-        :items="[port]"
-        label="Port"
-        append-icon="mdi-web"
-        chips
-        color="primary"
-        readonly
-        outlined
-        rounded
-      />
+      <v-row dense>
+        <v-col cols="12">
+          <span>
+            <v-icon color="green" small left>$run</v-icon>
+            Server is running ...
+          </span>
+          <div class="text-center">
+            <span v-for="ip in ips" :key="ip">
+              <a
+                v-text="`http://${ip}:${port}/`"
+                @click="openLink(`http://${ip}:${port}/`)"
+              />
+              <br />
+            </span>
+          </div>
+          <v-divider />
+        </v-col>
+        <v-col cols="12">
+          <v-select
+            v-model="ips"
+            :items="ips"
+            label="Address Ip"
+            append-icon="$link"
+            chips
+            dense
+            hide-details
+            color="primary"
+            multiple
+            readonly
+            outlined
+            rounded
+          />
+        </v-col>
+        <v-col cols="12">
+          <v-select
+            v-model="port"
+            :items="[port]"
+            label="Port"
+            append-icon="$globe"
+            hide-details
+            dense
+            chips
+            color="primary"
+            readonly
+            outlined
+            rounded
+          />
+        </v-col>
+      </v-row>
     </v-card-text>
   </v-card>
 </template>
@@ -44,6 +69,9 @@ export default {
     this.getAddressIP();
   },
   methods: {
+    openLink(link) {
+      require("electron").shell.openExternal(link);
+    },
     getAddressIP() {
       let pc = new RTCPeerConnection();
       let ips = [];

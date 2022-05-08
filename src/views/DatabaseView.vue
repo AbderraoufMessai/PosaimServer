@@ -1,8 +1,7 @@
 <template>
-  <v-card outlined class="rounded-xl" elevation="10">
-    <v-card-title> Database </v-card-title>
+  <v-card outlined class="rounded-xl">
     <v-card-text>
-      <v-row>
+      <v-row dense>
         <v-col cols="8">
           <v-file-input
             v-model="data"
@@ -13,7 +12,7 @@
             outlined
             dense
             rounded
-            prepend-icon=""
+            prepend-icon="$file"
             hide-details
             clearable
           />
@@ -30,8 +29,8 @@
             :loading="loading"
             :disabled="!data"
           >
-            <v-icon left> mdi-database-import </v-icon>
-            import
+            <v-icon small left>$down</v-icon>
+            import data
           </v-btn>
         </v-col>
         <v-col cols="12">
@@ -45,7 +44,7 @@
             :loading="loading"
             @click="exportDatabase"
           >
-            <v-icon left> mdi-database-export </v-icon>
+            <v-icon small left>$up</v-icon>
             export data
           </v-btn>
         </v-col>
@@ -60,7 +59,7 @@
             :loading="loading"
             @click="clearDatabase"
           >
-            <v-icon left> mdi-database-remove </v-icon>
+            <v-icon small left>$trash</v-icon>
             clear all data
           </v-btn>
         </v-col>
@@ -75,7 +74,7 @@
       {{ snackbar.message }}
       <template #action="{ attrs }">
         <v-btn icon v-bind="attrs" @click="snackbar.active = false">
-          <v-icon small> mdi-close </v-icon>
+          <v-icon small>$close</v-icon>
         </v-btn>
       </template>
     </v-snackbar>
@@ -101,30 +100,59 @@ export default {
   },
   methods: {
     exportDatabase() {
+      const dialog = require("electron").remote.dialog;
+      const fs = require("fs");
+      const path = require("path");
+
       this.loading = true;
       this.$store.dispatch("exportDatabase").then((errors) => {
-        this.loading = false;
         if (errors) {
+          this.loading = false;
           this.snackbar.active = true;
           this.snackbar.color = "error";
           this.snackbar.message = errors.message;
         } else {
-          const fs = require("fs");
-          fs.writeFile(
-            `data_${this.database.createdAt}.json`,
-            JSON.stringify(this.database),
-            (err) => {
-              if (err) {
-                this.snackbar.active = true;
-                this.snackbar.color = "error";
-                this.snackbar.message = err;
-              } else {
-                this.snackbar.active = true;
-                this.snackbar.color = "success";
-                this.snackbar.message = "data export success.";
+          dialog
+            .showSaveDialog({
+              defaultPath: path.join(
+                __dirname,
+                `data_${this.database.createdAt}.json`
+              ),
+              filters: [
+                {
+                  name: "Json Files",
+                  extensions: ["json"],
+                },
+              ],
+              properties: [],
+            })
+            .then((file) => {
+              if (!file.canceled) {
+                fs.writeFile(
+                  file.filePath.toString(),
+                  JSON.stringify(this.database),
+                  (err) => {
+                    if (err) {
+                      this.snackbar.active = true;
+                      this.snackbar.color = "error";
+                      this.snackbar.message = err;
+                      this.loading = false;
+                    } else {
+                      this.snackbar.active = true;
+                      this.snackbar.color = "success";
+                      this.snackbar.message = "data export success.";
+                      this.loading = false;
+                    }
+                  }
+                );
               }
-            }
-          );
+            })
+            .catch((err) => {
+              this.loading = false;
+              this.snackbar.active = true;
+              this.snackbar.color = "error";
+              this.snackbar.message = err;
+            });
         }
       });
     },

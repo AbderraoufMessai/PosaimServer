@@ -1,11 +1,18 @@
 "use strict";
 
-import { app, BrowserWindow, ipcMain, protocol } from "electron";
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  protocol,
+  globalShortcut,
+} from "electron";
 import { createProtocol } from "vue-cli-plugin-electron-builder/lib";
 import installExtension, { VUEJS_DEVTOOLS } from "electron-devtools-installer";
 import ShortCrypt from "short-crypt";
 import { machineIdSync } from "node-machine-id";
 import { validateLicense } from "license-key-gen";
+import settings from "electron-settings";
 import { closeServer, startServer } from "./server";
 import { Database } from "./server/models";
 
@@ -31,8 +38,9 @@ async function decrypt_date(cipher) {
   return date;
 }
 
-async function verify_key(key) {
+async function verify_key() {
   let response;
+  const key = await settings.get("license_key");
   if (key) {
     const exp = key.split("-")[0];
 
@@ -44,25 +52,26 @@ async function verify_key(key) {
         response = { errorCode: 1006, message: "license has expired" };
       } else {
         const machineId = machineIdSync(true);
-        const secret_key = process.env.SECRET_KEY;
-        key = key.substring(exp.length + 1);
+        const secret_key = process.env.SECRET_KEY || "SUPERMARKET";
+        const serial = key.substring(exp.length + 1);
         const data = {
           info: { machineId },
           prodCode: secret_key,
           appVersion: "1.0.0",
         };
         try {
-          response = await validateLicense(data, key);
-          response.date = expiration;
+          response = await validateLicense(data, serial);
+          response.expiration = expiration;
+          response.key = key;
         } catch (err) {
-          response = err;
+          response = { key, errorCode: 1007, message: "license not valid" };
         }
       }
     } else {
-      response = { errorCode: 1007, message: "license not valid" };
+      response = { key, errorCode: 1008, message: "license not valid" };
     }
   } else {
-    response = { errorCode: 1007, message: "license not found" };
+    response = { key, errorCode: 1009, message: "license not found" };
   }
   return response;
 }
@@ -88,30 +97,46 @@ async function createWindow() {
     },
   });
 
+  if (app.requestSingleInstanceLock()) {
+    app.on("second-instance", () => {
+      // Someone tried to run a second instance, we should focus our window.
+      if (win) {
+        if (win.isMinimized()) win.restore();
+        win.focus();
+      }
+    });
+  } else {
+    app.quit();
+  }
+
   // license
   ipcMain.handle("verify-license", async () => {
-    const license_key = process.env.LICENSE_KEY;
-    return await verify_key(license_key);
+    return await verify_key();
   });
   ipcMain.handle("set-license", async (event, { license_key }) => {
-    process.env.LICENSE_KEY = license_key;
-    return await verify_key(license_key);
+    await settings.set("license_key", license_key);
+    return await verify_key();
   });
 
   // server
   let server = null;
   ipcMain.handle("start-server", async () => {
-    if (!server) {
-      app.allowRendererProcessReuse = false;
-      await Database.sync()
-        .then(() => {
-          server = startServer();
-        })
-        .catch((err) => {
-          console.log(err);
-        });
+    const valid = await verify_key();
+    if (valid.errorCode === 0) {
+      if (!server) {
+        app.allowRendererProcessReuse = false;
+        await Database.sync()
+          .then(() => {
+            server = startServer();
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      }
+      return !!server;
+    } else {
+      return false;
     }
-    return !!server;
   });
   ipcMain.handle("close-server", async () => {
     if (server) {
@@ -137,6 +162,20 @@ async function createWindow() {
   }
 }
 
+// active refresh
+app.on("browser-window-focus", () => {
+  globalShortcut.register("CommandOrControl+R", () => {
+    // CommandOrControl+R is pressed: Shortcut Disabled
+  });
+  globalShortcut.register("F5", () => {
+    // F5 is pressed: Shortcut Disabled
+  });
+});
+app.on("browser-window-blur", () => {
+  globalShortcut.unregister("CommandOrControl+R");
+  globalShortcut.unregister("F5");
+});
+
 // Quit when all windows are closed.
 app.on("window-all-closed", () => {
   // On macOS, it is common for applications and their menu bar
@@ -155,6 +194,7 @@ app.on("activate", async () => {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
+
 app.on("ready", async () => {
   // Install Vue Devtools
   if (isDevelopment && !process.env.IS_TEST) {

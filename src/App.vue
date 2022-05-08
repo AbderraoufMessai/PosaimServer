@@ -1,107 +1,75 @@
 <template>
-  <v-app v-if="valid">
+  <v-app>
     <v-system-bar app color="primary">
-      <v-icon>mdi-lock-clock</v-icon>
-      <span
-        v-text="`Expired at ${new Date(license.date).toLocaleDateString()}`"
-      />
       <v-spacer />
-      <v-btn x-small icon @click="openConsole">
-        <v-icon>mdi-console</v-icon>
-      </v-btn>
-      <v-btn x-small icon @click="minimizeWindow">
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
-      <v-btn class="mx-2" x-small icon disabled>
-        <v-icon>mdi-checkbox-blank-outline</v-icon>
-      </v-btn>
-      <v-btn x-small icon @click="closeWindow">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
+      <v-icon small @click="openConsole">$console</v-icon>
+      <v-icon small @click="minimizeWindow">$minimize</v-icon>
+      <!--      <v-icon small disabled>$maximize</v-icon>-->
+      <v-icon small @click="closeWindow">$close</v-icon>
     </v-system-bar>
     <v-app-bar
       app
       fixed
       dark
       dense
-      flat
       clipped-left
+      flat
       color="accent"
-      class="rounded-br-xl"
+      class="rounded-b-xl"
     >
       <v-spacer />
       <v-app-bar-title>
-        <v-icon right>mdi-server</v-icon>
-        Supermarket Server
+        <v-icon left>$server</v-icon>
+        Posaim Server
       </v-app-bar-title>
       <v-spacer />
-      <v-tooltip v-if="!serverIsRunning" color="green" left>
-        <template #activator="{ on, attrs }">
-          <v-btn
-            color="error"
-            dark
-            absolute
-            bottom
-            right
-            v-bind="attrs"
-            v-on="on"
-            fab
-            @click="startServer"
-          >
-            <v-icon large> mdi-power </v-icon>
+      <v-speed-dial
+        v-model="menu"
+        top
+        right
+        absolute
+        direction="bottom"
+        transition="slide-y-reverse-transition"
+      >
+        <template v-slot:activator>
+          <v-btn v-model="menu" fab color="success">
+            <v-icon v-if="menu" color="black"> $close </v-icon>
+            <v-icon v-else color="black" v-text="'$' + $route.name" />
           </v-btn>
         </template>
-        <v-icon small left> mdi-power-on </v-icon> Click to Start Server
-      </v-tooltip>
-      <v-tooltip v-else color="error" left>
-        <template #activator="{ on, attrs }">
-          <v-btn
-            color="green"
-            dark
-            absolute
-            bottom
-            right
-            v-bind="attrs"
-            v-on="on"
-            fab
-            @click="closeServer"
-          >
-            <v-icon large> mdi-power </v-icon>
-          </v-btn>
-        </template>
-        <v-icon small left> mdi-power-off </v-icon> Click to Stop Server
-      </v-tooltip>
+        <v-tooltip v-for="item in itemsNavigation" :key="item.title" left>
+          <template #activator="{ on, attrs }">
+            <v-btn
+              fab
+              dark
+              small
+              v-bind="attrs"
+              v-on="on"
+              :disabled="!running && item.server"
+              @click="$router.push({ name: item.path }).catch(() => {})"
+            >
+              <v-icon v-text="item.icon" />
+            </v-btn>
+          </template>
+          {{ item.title }}
+        </v-tooltip>
+        <v-tooltip v-if="valid" left>
+          <template #activator="{ on, attrs }">
+            <v-btn
+              fab
+              dark
+              :color="running ? 'red' : 'green'"
+              v-bind="attrs"
+              v-on="on"
+              @click.stop="switchServer"
+            >
+              <v-icon> $power </v-icon>
+            </v-btn>
+          </template>
+          {{ running ? "Close Server" : "Start Server" }}
+        </v-tooltip>
+      </v-speed-dial>
     </v-app-bar>
-    <v-navigation-drawer
-      app
-      dark
-      permanent
-      mini-variant
-      expand-on-hover
-      fixed
-      clipped
-      touchless
-      style="z-index: 100"
-      width="200"
-      color="accent"
-      class="rounded-br-xl"
-    >
-      <v-divider />
-      <v-list nav dense rounded>
-        <v-list-item
-          v-for="(item, i) in itemsNavigation"
-          :to="item.path"
-          :key="i"
-          link
-          color="primary"
-        >
-          <v-list-item-icon>
-            <v-icon v-text="item.icon" />
-          </v-list-item-icon>
-          <v-list-item-title v-text="item.title" />
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
     <v-main
       class="align-center"
       height="100%"
@@ -111,125 +79,40 @@
         <router-view />
       </v-container>
     </v-main>
-  </v-app>
-  <v-app v-else>
-    <v-system-bar app color="primary">
-      <v-spacer />
-      <v-btn x-small icon @click="openConsole">
-        <v-icon>mdi-console</v-icon>
-      </v-btn>
-      <v-btn x-small icon @click="minimizeWindow">
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
-      <v-btn class="mx-2" x-small icon disabled>
-        <v-icon>mdi-checkbox-blank-outline</v-icon>
-      </v-btn>
-      <v-btn x-small icon @click="closeWindow">
-        <v-icon>mdi-close</v-icon>
-      </v-btn>
-    </v-system-bar>
-    <v-app-bar app fixed dark dense flat color="accent" class="rounded-b-xl">
-      <v-spacer />
-      <v-app-bar-title>
-        <v-icon right>mdi-server</v-icon>
-        Supermarket Server
-      </v-app-bar-title>
-      <v-spacer />
-    </v-app-bar>
-    <v-main
-      class="align-center"
-      height="100%"
-      style="background-color: rgb(230, 230, 230)"
-    >
-      <v-container>
-        <validation-observer ref="observer" v-slot="{ invalid }">
-          <form @submit.prevent="submit">
-            <v-card
-              color="accent"
-              dark
-              max-width="450"
-              class="mx-auto rounded-xl"
-              elevation="24"
-              outlined
-            >
-              <v-card-text>
-                <v-text-field
-                  v-model="machineId"
-                  label="Machine Id"
-                  append-icon="mdi-desktop-classic "
-                  color="primary"
-                  outlined
-                  rounded
-                  dense
-                  readonly
-                />
-                <validation-provider
-                  v-slot="{ errors }"
-                  name="license"
-                  rules="required"
-                >
-                  <v-text-field
-                    v-model="key"
-                    label="License key"
-                    append-icon="mdi-key"
-                    :error-messages="errors"
-                    color="primary"
-                    outlined
-                    rounded
-                    dense
-                    required
-                  />
-                </validation-provider>
-              </v-card-text>
-              <v-tooltip bottom>
-                <template #activator="{ on, attrs }">
-                  <v-btn
-                    absolute
-                    bottom
-                    color="secondary"
-                    left
-                    v-bind="attrs"
-                    v-on="on"
-                    fab
-                    small
-                    @click="reset"
-                  >
-                    <v-icon color="black"> mdi-cancel </v-icon>
-                  </v-btn>
-                </template>
-                Reset
-              </v-tooltip>
-              <v-tooltip color="green" bottom>
-                <template #activator="{ on, attrs }">
-                  <v-btn
-                    color="green"
-                    dark
-                    absolute
-                    bottom
-                    right
-                    v-bind="attrs"
-                    v-on="on"
-                    fab
-                    small
-                    type="submit"
-                    :disabled="invalid"
-                  >
-                    <v-icon> mdi-check </v-icon>
-                  </v-btn>
-                </template>
-                Update
-              </v-tooltip>
-            </v-card>
-          </form>
-        </validation-observer>
-      </v-container>
-    </v-main>
-    <v-footer dark color="accent">
-      <v-icon left small>mdi-phone</v-icon>
-      <span class="text-body-2"> (+213) 556 57 29 60 </span>
-      <v-spacer />
-      <v-icon left small>mdi-email</v-icon>
-      <span class="text-body-2"> abderraoufmessai@gmail.com </span>
+    <v-footer app fixed dark color="accent" class="rounded-t-xl">
+      <v-row dense>
+        <v-col class="text-left">
+          <v-tooltip right>
+            <template #activator="{ on, attrs }">
+              <v-icon
+                left
+                v-bind="attrs"
+                v-on="on"
+                :color="running ? 'green' : 'red'"
+                v-text="valid ? '$online' : '$offline'"
+              />
+            </template>
+            <span v-text="running ? 'Server is online' : 'Server is offline'" />
+          </v-tooltip>
+        </v-col>
+        <v-col class="text-center">
+          {{ "Copyright © " + new Date().getFullYear() }}
+        </v-col>
+        <v-col class="text-right">
+          <v-tooltip left>
+            <template #activator="{ on, attrs }">
+              <v-icon
+                left
+                v-bind="attrs"
+                v-on="on"
+                :color="valid ? 'green' : 'red'"
+                v-text="valid ? '$unlock' : '$lock'"
+              />
+            </template>
+            <span v-text="valid ? 'App is activated' : 'App is locked'" />
+          </v-tooltip>
+        </v-col>
+      </v-row>
     </v-footer>
   </v-app>
 </template>
@@ -238,34 +121,38 @@
 export default {
   name: "App",
   data: () => ({
+    menu: false,
+    drawer: false,
     key: null,
     itemsNavigation: [
-      { title: "Network", path: "/", icon: "mdi-network" },
-      { title: "Database", path: "/database", icon: "mdi-database" },
+      { title: "Home", path: "home", icon: "$home" },
+      { title: "Network", path: "network", icon: "$network", server: true },
+      { title: "Database", path: "database", icon: "$database", server: true },
       {
         title: "Administration",
-        path: "/administration",
-        icon: "mdi-shield-account",
+        path: "administration",
+        icon: "$administration",
+        server: true,
       },
+      { title: "Help", path: "help", icon: "$help" },
     ],
   }),
   async mounted() {
-    await this.$store.dispatch("verifyLicenseKey").then(() => {
-      this.key = this.license ? this.license.license : null;
-    });
+    await this.$store.dispatch("verifyLicenseKey");
+    window.setInterval(async () => {
+      await this.$store.dispatch("verifyLicenseKey").then(async () => {
+        if (!this.valid) {
+          await this.$store.dispatch("closeServer");
+        }
+      });
+    }, 1000); // every 1 second
   },
   computed: {
-    machineId() {
-      return this.$store.getters.machineId;
-    },
-    license() {
-      return this.$store.getters.license;
-    },
     valid() {
       return this.$store.getters.valid;
     },
-    serverIsRunning() {
-      return this.$store.getters.serverIsRunning;
+    running() {
+      return this.$store.getters.running;
     },
   },
   methods: {
@@ -278,33 +165,19 @@ export default {
     minimizeWindow() {
       this.$store.dispatch("minimizeWindow");
     },
+    switchServer() {
+      if (this.running) {
+        this.closeServer();
+      } else {
+        this.startServer();
+      }
+    },
     startServer() {
       this.$store.dispatch("startServer");
     },
     closeServer() {
       this.$store.dispatch("closeServer");
-    },
-    reset() {
-      this.key = null;
-      this.$refs.observer.reset();
-    },
-    submit() {
-      this.$refs.observer.validate().then((success) => {
-        if (success) {
-          this.$store
-            .dispatch("updateLicenseKey", {
-              license_key: this.key,
-            })
-            .then(() => {
-              const error = this.license
-                ? { license: this.license.message }
-                : null;
-              if (error && this.$refs.observer) {
-                this.$refs.observer.setErrors(error);
-              }
-            });
-        }
-      });
+      this.$router.push({ name: "home" }).catch(() => {});
     },
   },
 };

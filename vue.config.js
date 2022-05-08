@@ -10,6 +10,23 @@ module.exports = defineConfig({
     electronBuilder: {
       externals: ["sequelize"],
       nodeIntegration: true,
+      builderOptions: {
+        appId: "com.posaim.server.app",
+        productName: "Posaim Server",
+        win: {
+          target: ["nsis"],
+          icon: "public/icon.ico",
+          requestedExecutionLevel: "requireAdministrator",
+        },
+        nsis: {
+          installerIcon: "public/icon.ico",
+          uninstallerIcon: "public/icon.ico",
+          oneClick: false,
+          perMachine: false,
+          allowToChangeInstallationDirectory: true,
+          createDesktopShortcut: true,
+        },
+      },
     },
     i18n: {
       locale: "en",

@@ -1,8 +1,7 @@
 <template>
   <validation-observer ref="observer" v-slot="{ invalid }">
     <form @submit.prevent="submit">
-      <v-card outlined class="rounded-xl" elevation="10">
-        <v-card-title> Administration </v-card-title>
+      <v-card outlined class="rounded-xl">
         <v-card-text>
           <validation-provider
             v-slot="{ errors }"
@@ -12,13 +11,13 @@
             <v-text-field
               v-model="username"
               label="Username"
-              prepend-inner-icon="mdi-account"
               :error-messages="errors"
               outlined
               rounded
               dense
               :counter="50"
               required
+              append-icon="$username"
             />
           </validation-provider>
           <validation-provider
@@ -35,9 +34,8 @@
               rounded
               :counter="50"
               required
-              prepend-inner-icon="mdi-lock"
+              :append-icon="showPassword ? '$showPW' : '$hidePW'"
               :type="showPassword ? 'text' : 'password'"
-              :append-icon="showPassword ? 'mdi-eye' : 'mdi-eye-off'"
               @click:append="showPassword = !showPassword"
             />
           </validation-provider>
@@ -55,9 +53,8 @@
               rounded
               :counter="50"
               required
-              prepend-inner-icon="mdi-lock"
+              :append-icon="showRePassword ? '$showPW' : '$hidePW'"
               :type="showRePassword ? 'text' : 'password'"
-              :append-icon="showRePassword ? 'mdi-eye' : 'mdi-eye-off'"
               @click:append="showRePassword = !showRePassword"
             />
           </validation-provider>
@@ -75,7 +72,7 @@
               fab
               small
             >
-              <v-icon> mdi-cancel </v-icon>
+              <v-icon>$cancel</v-icon>
             </v-btn>
           </template>
           Reset
@@ -96,7 +93,7 @@
               :loading="loading"
               :disabled="invalid"
             >
-              <v-icon> mdi-content-save </v-icon>
+              <v-icon>$check</v-icon>
             </v-btn>
           </template>
           Save
@@ -111,7 +108,7 @@
         {{ snackbar.message }}
         <template #action="{ attrs }">
           <v-btn icon v-bind="attrs" @click="snackbar.active = false">
-            <v-icon small> mdi-close </v-icon>
+            <v-icon small>$close</v-icon>
           </v-btn>
         </template>
       </v-snackbar>
