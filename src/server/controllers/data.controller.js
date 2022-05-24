@@ -153,11 +153,12 @@ exports.import = (req, res) => {
 };
 
 exports.destroy = (req, res) => {
-  deleteAllData().then((response) => {
-    if (response) {
+  // deleteAllData().then((response) => {
+  DB.Database.sync({ force: true })
+    .then(() => {
       res.send({ message: "deleted success" });
-    } else {
+    })
+    .catch(() => {
       res.status(500).send({ message: "deleted error" });
-    }
-  });
+    });
 };

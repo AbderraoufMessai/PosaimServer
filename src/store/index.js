@@ -8,19 +8,24 @@ Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
-    license: null,
     machineId: machineIdSync(true),
-    running: false,
-    data: null,
+    isDevelopment: process.env.NODE_ENV !== "production",
     port: process.env.VUE_APP_API_PORT,
+    data: null,
+    isRunning: false,
+    license: { errorCode: 1, key: null },
+    trialMode: { finish: false, trial: false },
   },
   getters: {
-    valid: (state) => (state.license ? state.license.errorCode === 0 : false),
-    license: (state) => state.license,
     machineId: (state) => state.machineId,
+    isDevelopment: (state) => state.isDevelopment,
     port: (state) => state.port,
-    running: (state) => state.running,
     data: (state) => state.data,
+    licenseKey: (state) => state.license.key,
+    isActivated: (state) => state.license.errorCode === 0,
+    isRunning: (state) => state.isRunning,
+    isTrial: (state) => state.trialMode.trial,
+    trialFinish: (state) => state.trialMode.finish,
   },
   mutations: {
     setData: (state, { name, data }) => {
@@ -43,21 +48,32 @@ export default new Vuex.Store({
     },
   },
   actions: {
+    async reset() {
+      await ipcRenderer.invoke("reset");
+    },
     async updateLicenseKey({ commit }, { license_key }) {
       const response = await ipcRenderer.invoke("set-license", { license_key });
       await commit("setData", { name: "license", data: response });
     },
-    async verifyLicenseKey({ commit }) {
-      const response = await ipcRenderer.invoke("verify-license");
+    async validateLicenseKey({ commit }) {
+      const response = await ipcRenderer.invoke("validate-license");
       await commit("setData", { name: "license", data: response });
+    },
+    async startTrial({ commit }) {
+      const response = await ipcRenderer.invoke("start-trial");
+      await commit("setData", { name: "trialMode", data: response });
+    },
+    async validateTrial({ commit }) {
+      const response = await ipcRenderer.invoke("validate-trial");
+      await commit("setData", { name: "trialMode", data: response });
     },
     async startServer({ commit }) {
       const response = await ipcRenderer.invoke("start-server");
-      await commit("setData", { name: "running", data: response });
+      await commit("setData", { name: "isRunning", data: response });
     },
     async closeServer({ commit }) {
       const response = await ipcRenderer.invoke("close-server");
-      await commit("setData", { name: "running", data: response });
+      await commit("setData", { name: "isRunning", data: response });
     },
     async closeWindow() {
       remote.getCurrentWindow().close();

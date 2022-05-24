@@ -2,6 +2,9 @@
   <validation-observer ref="observer" v-slot="{ invalid }">
     <form @submit.prevent="submit">
       <v-card outlined class="rounded-xl">
+        <v-card-title class="text-body-2">
+          Update Admin of Application
+        </v-card-title>
         <v-card-text>
           <validation-provider
             v-slot="{ errors }"

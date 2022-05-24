@@ -1,31 +1,27 @@
 <template>
-  <v-dialog v-model="dialog" persistent max-width="400px">
+  <v-dialog v-model="dialog" class="rounded-xl" persistent>
     <template #activator="{ on: onDialog, attrs: attrsDialog }">
       <v-tooltip bottom>
         <template #activator="{ on: onTooltip, attrs: attrsTooltip }">
           <v-btn
-            absolute
-            dark
-            bottom
-            left
-            fab
-            small
+            icon
             color="primary"
+            :disabled="disabled"
             v-bind="{ ...attrsTooltip, ...attrsDialog }"
             v-on="{ ...onTooltip, ...onDialog }"
           >
-            <v-icon>$edit</v-icon>
+            <v-icon>$key</v-icon>
           </v-btn>
         </template>
-        Edit
+        Activate Application
       </v-tooltip>
     </template>
     <validation-observer ref="observer" v-slot="{ invalid }">
       <form @submit.prevent="submit">
-        <v-card class="rounded-lg" dark color="accent">
+        <v-card class="rounded-xl" dark color="accent" tile>
           <v-toolbar dense flat color="accent">
             <v-toolbar-title class="text-body-1">
-              <v-icon left>$key</v-icon>Edit license key
+              Activate Application
             </v-toolbar-title>
             <v-spacer />
             <v-tooltip color="red" top>
@@ -46,31 +42,51 @@
               Close
             </v-tooltip>
           </v-toolbar>
+          <v-divider />
           <v-card-text>
             <v-row dense>
+              <v-col cols="12">
+                <v-textarea
+                  v-model="machineId"
+                  label="Machine id"
+                  append-icon="$machine"
+                  color="primary"
+                  hide-details
+                  dense
+                  readonly
+                  outlined
+                  rounded
+                  rows="1"
+                  no-resize
+                  @click="copy(machineId)"
+                />
+              </v-col>
               <v-col cols="12">
                 <validation-provider
                   v-slot="{ errors }"
                   name="license key"
                   rules="required"
                 >
-                  <v-text-field
+                  <v-textarea
                     v-model="key"
                     label="License key"
+                    append-icon="$key"
+                    color="primary"
                     :error-messages="errors"
-                    hide-details
-                    required
-                    outlined
+                    :hide-details="errors.length === 0"
                     dense
+                    outlined
+                    rounded
+                    rows="1"
+                    no-resize
                   />
                 </validation-provider>
               </v-col>
             </v-row>
           </v-card-text>
           <v-card-actions>
-            <v-spacer />
-            <v-btn small dark color="green" :disabled="invalid" type="submit">
-              <v-icon small left>$save</v-icon> Save
+            <v-btn rounded dark color="green" :disabled="invalid" type="submit">
+              <v-icon small left>$save</v-icon> Activate
             </v-btn>
           </v-card-actions>
         </v-card>
@@ -94,7 +110,13 @@
 
 <script>
 export default {
-  name: "LicenseKeyDialog",
+  name: "ActivateApplicationDialog",
+  props: {
+    disabled: {
+      type: Boolean,
+      default: () => false,
+    },
+  },
   data: () => ({
     dialog: false,
     key: null,
@@ -105,11 +127,32 @@ export default {
     },
   }),
   computed: {
-    license() {
-      return this.$store.getters.license;
+    machineId() {
+      return this.$store.getters.machineId;
+    },
+    licenseKey() {
+      return this.$store.getters.licenseKey;
+    },
+    isActivated() {
+      return this.$store.getters.isActivated;
     },
   },
+  mounted() {
+    this.key = this.licenseKey;
+  },
   methods: {
+    async copy(text) {
+      try {
+        await navigator.clipboard.writeText(text);
+        this.snackbar.message = "Has been copied.";
+        this.snackbar.color = "green";
+        this.snackbar.active = true;
+      } catch ($e) {
+        this.snackbar.message = "Cannot be copied.";
+        this.snackbar.color = "red";
+        this.snackbar.active = true;
+      }
+    },
     reset() {
       this.key = null;
       this.$refs.observer.reset();
@@ -120,14 +163,15 @@ export default {
           this.$store
             .dispatch("updateLicenseKey", { license_key: this.key })
             .then(() => {
-              this.reset();
-              if (this.license.errorCode === 0) {
+              if (this.isActivated) {
+                this.dialog = false;
                 this.snackbar.color = "green";
                 this.snackbar.message = "valid license key.";
                 this.snackbar.active = true;
               } else {
+                this.reset();
                 this.snackbar.color = "red";
-                this.snackbar.message = this.license.message;
+                this.snackbar.message = "invalid license key";
                 this.snackbar.active = true;
               }
             });

@@ -12,7 +12,7 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // simple route
 app.get("/", (req, res) => {
-  res.json({ message: "Supermarket server API." });
+  res.json({ message: "POSAIM server API." });
 });
 // test connection
 app.get("/api", (req, res) => {

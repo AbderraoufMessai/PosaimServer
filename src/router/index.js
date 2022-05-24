@@ -57,7 +57,7 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.license)) {
-    if (store.getters.valid) {
+    if (store.getters.isActivated || store.getters.isTrial) {
       next();
     } else {
       next({ name: "home" });
@@ -69,7 +69,7 @@ router.beforeEach((to, from, next) => {
 
 router.beforeEach((to, from, next) => {
   if (to.matched.some((record) => record.meta.server)) {
-    if (store.getters.running) {
+    if (store.getters.isRunning) {
       next();
     } else {
       next({ name: "home" });

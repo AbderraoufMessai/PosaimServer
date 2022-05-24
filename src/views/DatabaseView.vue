@@ -1,6 +1,13 @@
 <template>
   <v-card outlined class="rounded-xl">
     <v-card-text>
+      <v-chip color="red" dark>
+        <h4>
+          Attention : Any of these operations there is no return from them !!
+        </h4>
+      </v-chip>
+    </v-card-text>
+    <v-card-text>
       <v-row dense>
         <v-col cols="8">
           <v-file-input
@@ -60,7 +67,7 @@
             @click="clearDatabase"
           >
             <v-icon small left>$trash</v-icon>
-            clear all data
+            destroy data
           </v-btn>
         </v-col>
       </v-row>
@@ -136,22 +143,22 @@ export default {
                       this.snackbar.active = true;
                       this.snackbar.color = "error";
                       this.snackbar.message = err;
-                      this.loading = false;
                     } else {
                       this.snackbar.active = true;
                       this.snackbar.color = "success";
                       this.snackbar.message = "data export success.";
-                      this.loading = false;
                     }
                   }
                 );
               }
             })
             .catch((err) => {
-              this.loading = false;
               this.snackbar.active = true;
               this.snackbar.color = "error";
               this.snackbar.message = err;
+            })
+            .finally(() => {
+              this.loading = false;
             });
         }
       });

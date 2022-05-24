@@ -10,5 +10,6 @@ billRoutes.use((req, res, next) => {
 billRoutes.get("/", billController.findAll);
 billRoutes.get("/:id", billController.findByPk);
 billRoutes.post("/", billController.create);
+billRoutes.delete("/:id", billController.destroy);
 
 module.exports = billRoutes;

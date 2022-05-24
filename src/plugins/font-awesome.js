@@ -37,9 +37,21 @@ import {
   faLockOpen,
   faWifi,
   faWifiStrong,
+  faPlay,
+  faHourglassStart,
+  faHourglass,
+  faTabletScreenButton,
+  faArrowUpRightFromSquare,
+  faPaste,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
+  faPaste,
+  faArrowUpRightFromSquare,
+  faTabletScreenButton,
+  faHourglass,
+  faHourglassStart,
+  faPlay,
   faWifi,
   faWifiStrong,
   faLockOpen,
@@ -83,6 +95,42 @@ const fa_icons = {
     component: FontAwesomeIcon,
     props: {
       icon: ["fa", "shield"],
+    },
+  },
+  copy: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "paste"],
+    },
+  },
+  open: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "arrow-up-right-from-square"],
+    },
+  },
+  app: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "tablet-screen-button"],
+    },
+  },
+  pending: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "hourglass"],
+    },
+  },
+  duration: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "hourglass-start"],
+    },
+  },
+  play: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "play"],
     },
   },
   run: {

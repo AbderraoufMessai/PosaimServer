@@ -107,3 +107,48 @@ exports.create = (req, res) => {
       res.status(500).send({ message: err.message || "Some error occurred." });
     });
 };
+
+exports.destroy = (req, res) => {
+  const id = req.params.id;
+  DB.bills
+    .findOne({ where: { id } })
+    .then((bill) => {
+      if (bill) {
+        if (bill.status === "INCOMPLETE") {
+          model
+            .destroy({
+              where: { id: id },
+            })
+            .then((num) => {
+              if (num === 1) {
+                res.send({
+                  message: "Deleted successfully!",
+                });
+              } else {
+                res.send({
+                  message: "Cannot delete bill. Maybe was not found!",
+                });
+              }
+            })
+            .catch((err) => {
+              res.status(500).send({
+                message: err.message || "Could not delete",
+              });
+            });
+        } else {
+          res.status(500).send({
+            message: "Can't delete this bill.",
+          });
+        }
+      } else {
+        res.status(500).send({
+          message: "Can't delete this bill.",
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred.",
+      });
+    });
+};

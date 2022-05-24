@@ -2,9 +2,9 @@
   <v-app>
     <v-system-bar app color="primary">
       <v-spacer />
-      <v-icon small @click="openConsole">$console</v-icon>
+      <v-icon v-if="isDevelopment" small @click="resetSettings">$cancel</v-icon>
+      <v-icon v-if="isDevelopment" small @click="openConsole">$console</v-icon>
       <v-icon small @click="minimizeWindow">$minimize</v-icon>
-      <!--      <v-icon small disabled>$maximize</v-icon>-->
       <v-icon small @click="closeWindow">$close</v-icon>
     </v-system-bar>
     <v-app-bar
@@ -45,7 +45,7 @@
               small
               v-bind="attrs"
               v-on="on"
-              :disabled="!running && item.server"
+              :disabled="!isRunning && item.server"
               @click="$router.push({ name: item.path }).catch(() => {})"
             >
               <v-icon v-text="item.icon" />
@@ -53,12 +53,13 @@
           </template>
           {{ item.title }}
         </v-tooltip>
-        <v-tooltip v-if="valid" left>
+        <v-tooltip v-if="isActivated || isTrial" left>
           <template #activator="{ on, attrs }">
             <v-btn
               fab
               dark
-              :color="running ? 'red' : 'green'"
+              :color="isRunning ? 'red' : 'green'"
+              :loading="loading"
               v-bind="attrs"
               v-on="on"
               @click.stop="switchServer"
@@ -66,7 +67,7 @@
               <v-icon> $power </v-icon>
             </v-btn>
           </template>
-          {{ running ? "Close Server" : "Start Server" }}
+          {{ isRunning ? "Close Server" : "Start Server" }}
         </v-tooltip>
       </v-speed-dial>
     </v-app-bar>
@@ -88,15 +89,17 @@
                 left
                 v-bind="attrs"
                 v-on="on"
-                :color="running ? 'green' : 'red'"
-                v-text="valid ? '$online' : '$offline'"
+                :color="isRunning ? 'green' : 'red'"
+                v-text="isRunning ? '$online' : '$offline'"
               />
             </template>
-            <span v-text="running ? 'Server is online' : 'Server is offline'" />
+            <span
+              v-text="isRunning ? 'Server is online' : 'Server is offline'"
+            />
           </v-tooltip>
         </v-col>
         <v-col class="text-center">
-          {{ "Copyright © " + new Date().getFullYear() }}
+          <small v-text="'Copyright © ' + new Date().getFullYear()" />
         </v-col>
         <v-col class="text-right">
           <v-tooltip left>
@@ -105,11 +108,19 @@
                 left
                 v-bind="attrs"
                 v-on="on"
-                :color="valid ? 'green' : 'red'"
-                v-text="valid ? '$unlock' : '$lock'"
+                :color="isActivated ? 'green' : isTrial ? '' : 'red'"
+                v-text="isActivated ? '$unlock' : '$lock'"
               />
             </template>
-            <span v-text="valid ? 'App is activated' : 'App is locked'" />
+            <span
+              v-text="
+                isActivated
+                  ? 'App is activated'
+                  : isTrial
+                  ? 'Trial mode'
+                  : 'App is locked'
+              "
+            />
           </v-tooltip>
         </v-col>
       </v-row>
@@ -124,6 +135,7 @@ export default {
     menu: false,
     drawer: false,
     key: null,
+    loading: false,
     itemsNavigation: [
       { title: "Home", path: "home", icon: "$home" },
       { title: "Network", path: "network", icon: "$network", server: true },
@@ -137,25 +149,40 @@ export default {
       { title: "Help", path: "help", icon: "$help" },
     ],
   }),
-  async mounted() {
-    await this.$store.dispatch("verifyLicenseKey");
-    window.setInterval(async () => {
-      await this.$store.dispatch("verifyLicenseKey").then(async () => {
-        if (!this.valid) {
-          await this.$store.dispatch("closeServer");
-        }
-      });
-    }, 1000); // every 1 second
+  mounted() {
+    this.$store.dispatch("validateLicenseKey").then(() => {
+      let interval;
+      if (!this.isActivated) {
+        interval = setInterval(() => {
+          this.$store.dispatch("validateTrial").then(() => {
+            if (!this.isTrial && !this.isActivated) {
+              this.$store.dispatch("closeServer");
+            }
+          });
+        }, 1000);
+      } else {
+        clearInterval(interval);
+      }
+    });
   },
   computed: {
-    valid() {
-      return this.$store.getters.valid;
+    isDevelopment() {
+      return this.$store.getters.isDevelopment;
     },
-    running() {
-      return this.$store.getters.running;
+    isTrial() {
+      return this.$store.getters.isTrial;
+    },
+    isActivated() {
+      return this.$store.getters.isActivated;
+    },
+    isRunning() {
+      return this.$store.getters.isRunning;
     },
   },
   methods: {
+    resetSettings() {
+      this.$store.dispatch("reset");
+    },
     openConsole() {
       this.$store.dispatch("openConsole");
     },
@@ -166,17 +193,22 @@ export default {
       this.$store.dispatch("minimizeWindow");
     },
     switchServer() {
-      if (this.running) {
-        this.closeServer();
+      this.loading = true;
+      if (this.isRunning) {
+        this.closeServer().then(() => {
+          this.loading = false;
+        });
       } else {
-        this.startServer();
+        this.startServer().then(() => {
+          this.loading = false;
+        });
       }
     },
-    startServer() {
-      this.$store.dispatch("startServer");
+    async startServer() {
+      await this.$store.dispatch("startServer");
     },
-    closeServer() {
-      this.$store.dispatch("closeServer");
+    async closeServer() {
+      await this.$store.dispatch("closeServer");
       this.$router.push({ name: "home" }).catch(() => {});
     },
   },

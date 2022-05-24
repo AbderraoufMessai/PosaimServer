@@ -1,115 +1,106 @@
 <template>
   <v-card outlined class="rounded-xl">
     <v-card-text>
-      <v-row dense>
-        <v-col cols="12">
-          <v-textarea
-            v-model="machineId"
-            label="Machine id"
-            append-icon="$machine"
-            color="primary"
-            hide-details
-            dense
-            readonly
-            outlined
-            rounded
-            rows="1"
-            no-resize
-            @click="copy(machineId)"
-          />
-        </v-col>
-        <v-col cols="12">
-          <v-textarea
-            v-model="key"
-            label="License key"
-            append-icon="$key"
-            color="primary"
-            hide-details
-            dense
-            readonly
-            outlined
-            rounded
-            rows="1"
-            no-resize
-          />
-        </v-col>
-        <v-col cols="12">
-          <v-text-field
-            v-model="expired"
-            label="Expired at"
-            append-icon="$date"
-            color="primary"
-            type="date"
-            hide-details
-            dense
-            readonly
-            outlined
-            rounded
-          />
-        </v-col>
-      </v-row>
+      <v-list dense>
+        <v-list-item>
+          <v-list-item-avatar tile>
+            <v-icon color="accent">$server</v-icon>
+          </v-list-item-avatar>
+          <v-list-item-content class="text-center">
+            <v-list-item-subtitle>Status of application</v-list-item-subtitle>
+            <v-list-item-title
+              v-text="isActivated ? 'Activated' : 'Inactivated'"
+            />
+          </v-list-item-content>
+          <v-list-item-action>
+            <activate-application-dialog :disabled="!!isActivated" />
+          </v-list-item-action>
+        </v-list-item>
+        <v-divider />
+        <v-list-item v-if="!isActivated">
+          <v-list-item-avatar tile>
+            <v-icon color="accent">$pending</v-icon>
+          </v-list-item-avatar>
+          <v-list-item-content class="text-center">
+            <v-list-item-subtitle>Trial Mode</v-list-item-subtitle>
+            <v-list-item-title
+              v-text="trialRest < 0 ? 'Trial is over' : `${trialRest} Days`"
+            />
+          </v-list-item-content>
+          <v-list-item-action>
+            <free-trial-dialog :disabled="!!isTrial" />
+          </v-list-item-action>
+        </v-list-item>
+        <v-divider v-if="!isActivated" />
+        <v-list-item>
+          <v-list-item-avatar tile>
+            <v-icon color="accent">$online</v-icon>
+          </v-list-item-avatar>
+          <v-list-item-content class="text-center">
+            <v-list-item-subtitle>Status of Server</v-list-item-subtitle>
+            <v-list-item-title>Offline</v-list-item-title>
+          </v-list-item-content>
+          <v-list-item-action>
+            <v-btn
+              icon
+              :disabled="!isRunning"
+              color="primary"
+              @click="$router.push({ name: 'network' }).catch(() => {})"
+            >
+              <v-icon>$network</v-icon>
+            </v-btn>
+          </v-list-item-action>
+        </v-list-item>
+        <v-divider />
+        <v-list-item>
+          <v-list-item-avatar tile>
+            <v-icon color="accent">$app</v-icon>
+          </v-list-item-avatar>
+          <v-list-item-content class="text-center">
+            <v-list-item-subtitle>Open Application</v-list-item-subtitle>
+            <v-list-item-title>POSAIM</v-list-item-title>
+          </v-list-item-content>
+          <v-list-item-action>
+            <v-btn tag="a" href="posaim://" icon color="primary">
+              <v-icon>$open</v-icon>
+            </v-btn>
+          </v-list-item-action>
+        </v-list-item>
+      </v-list>
     </v-card-text>
-    <LicenseKeyDialog />
-    <v-snackbar
-      v-model="snackbar.active"
-      :color="snackbar.color"
-      rounded="pill"
-      dark
-    >
-      {{ snackbar.message }}
-      <template #action="{ attrs }">
-        <v-btn icon v-bind="attrs" @click="snackbar.active = false">
-          <v-icon small>$close</v-icon>
-        </v-btn>
-      </template>
-    </v-snackbar>
   </v-card>
 </template>
 
 <script>
-import LicenseKeyDialog from "@/components/LicenseKeyDialog";
+import ActivateApplicationDialog from "@/components/ActivateApplicationDialog";
+import FreeTrialDialog from "@/components/FreeTrialDialog";
 export default {
   name: "HomeView",
-  components: { LicenseKeyDialog },
-  data: () => ({
-    snackbar: {
-      active: false,
-      message: null,
-      color: null,
-    },
-  }),
+  components: { FreeTrialDialog, ActivateApplicationDialog },
+  data: () => ({}),
   computed: {
-    machineId() {
-      return this.$store.getters.machineId;
+    isTrial() {
+      return this.$store.getters.isTrial;
     },
-    license() {
-      return this.$store.getters.license;
+    trialFinish() {
+      return this.$store.getters.trialFinish;
     },
-    key() {
-      return this.license ? this.license.key : null;
-    },
-    expired() {
-      return this.license
-        ? this.license.expiration
-          ? new Date(this.license.expiration).toISOString().substr(0, 10)
-          : null
-        : null;
-    },
-  },
-  methods: {
-    async copy(text) {
-      try {
-        await navigator.clipboard.writeText(text);
-        this.snackbar.message = "Has been copied.";
-        this.snackbar.color = "green";
-        this.snackbar.active = true;
-      } catch ($e) {
-        this.snackbar.message = "Cannot be copied.";
-        this.snackbar.color = "red";
-        this.snackbar.active = true;
+    trialRest() {
+      if (this.trialFinish) {
+        return Math.round(
+          (this.trialFinish - Date.now()) / (1000 * 60 * 60 * 24)
+        );
       }
+      return 30;
+    },
+    isActivated() {
+      return this.$store.getters.isActivated;
+    },
+    isRunning() {
+      return this.$store.getters.isRunning;
     },
   },
+  methods: {},
 };
 </script>
 
