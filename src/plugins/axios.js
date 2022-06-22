@@ -4,7 +4,7 @@ import VueAxios from "vue-axios";
 import getMAC from "getmac";
 
 axios.defaults.baseURL = process.env.VUE_APP_API_URL || "http://localhost:8000";
-axios.defaults.timeout = 5000; // 5s
+axios.defaults.timeout = 10000; // 10s
 axios.defaults.headers = {
   accept: "application/json",
   "Content-Type": "application/json",

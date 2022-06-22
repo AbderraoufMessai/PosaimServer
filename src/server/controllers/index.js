@@ -9,6 +9,7 @@ const controllers = {
   paymentController: require("./payment.controller"),
   dataController: require("./data.controller"),
   administrationController: require("./administration.controller"),
+  statsController: require("./stats.controller"),
 };
 
 module.exports = controllers;

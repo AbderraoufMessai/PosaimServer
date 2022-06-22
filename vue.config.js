@@ -18,6 +18,13 @@ module.exports = defineConfig({
           icon: "public/icon.ico",
           requestedExecutionLevel: "requireAdministrator",
         },
+        mac: {
+          target: ["dmg"],
+          icon: "public/icon.ico",
+        },
+        dmg: {
+          icon: "public/icon.ico",
+        },
         nsis: {
           installerIcon: "public/icon.ico",
           uninstallerIcon: "public/icon.ico",

@@ -139,7 +139,7 @@ export default {
     itemsNavigation: [
       { title: "Home", path: "home", icon: "$home" },
       { title: "Network", path: "network", icon: "$network", server: true },
-      { title: "Database", path: "database", icon: "$database", server: true },
+      { title: "Database", path: "database", icon: "$database", server: false },
       {
         title: "Administration",
         path: "administration",
@@ -206,6 +206,7 @@ export default {
     },
     async startServer() {
       await this.$store.dispatch("startServer");
+      this.$router.push({ name: "network" }).catch(() => {});
     },
     async closeServer() {
       await this.$store.dispatch("closeServer");

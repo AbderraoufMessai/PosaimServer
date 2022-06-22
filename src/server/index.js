@@ -7,7 +7,7 @@ const app = express();
 
 app.use(cors({ origin: "*" }));
 // app.use(express.static(__dirname + '/public'));
-app.use(bodyParser.json());
+app.use(bodyParser.json({ limit: "10mb" }));
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // simple route
@@ -30,6 +30,7 @@ app.use("/api/items", routes.itemRoutes);
 app.use("/api/payments", routes.paymentRoutes);
 app.use("/api/data", routes.dataRoutes);
 app.use("/api/administration", routes.administrationRoutes);
+app.use("/api/stats", routes.statsRoutes);
 
 const startServer = () => {
   const PORT = process.env.API_PORT || 8000;

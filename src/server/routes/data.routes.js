@@ -7,8 +7,7 @@ dataRoutes.use((req, res, next) => {
   authMiddleware.verifyAddressMac(req, res, next);
 });
 
-dataRoutes.get("/", dataController.export);
 dataRoutes.post("/", dataController.import);
-dataRoutes.delete("/", dataController.destroy);
+dataRoutes.delete("/", dataController.clear);
 
 module.exports = dataRoutes;

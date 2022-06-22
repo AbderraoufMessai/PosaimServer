@@ -38,7 +38,7 @@
           </v-list-item-avatar>
           <v-list-item-content class="text-center">
             <v-list-item-subtitle>Status of Server</v-list-item-subtitle>
-            <v-list-item-title>Offline</v-list-item-title>
+            <v-list-item-title v-text="isRunning ? 'Online' : 'Offline'" />
           </v-list-item-content>
           <v-list-item-action>
             <v-btn

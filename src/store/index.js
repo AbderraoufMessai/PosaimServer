@@ -98,7 +98,7 @@ export default new Vuex.Store({
     },
     async importDatabase(store, data) {
       let errors = null;
-      await Vue.axios.post("api/data/", { data }).catch((error) => {
+      await Vue.axios.post("api/data/", { products: data }).catch((error) => {
         errors = error;
       });
       return errors;

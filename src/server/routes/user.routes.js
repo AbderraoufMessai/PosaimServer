@@ -9,6 +9,7 @@ userRoutes.use((req, res, next) => {
 
 userRoutes.get("/", userController.findAll);
 userRoutes.get("/:id", userController.findByPk);
+userRoutes.get("/stats/:id", userController.stats);
 userRoutes.put("/:id", userController.update);
 userRoutes.delete("/:id", userController.destroy);
 

@@ -43,9 +43,15 @@ import {
   faTabletScreenButton,
   faArrowUpRightFromSquare,
   faPaste,
+  faCirclePlus,
+  faDownload,
+  faArrowRotateBackward,
 } from "@fortawesome/free-solid-svg-icons";
 
 library.add(
+  faArrowRotateBackward,
+  faDownload,
+  faCirclePlus,
   faPaste,
   faArrowUpRightFromSquare,
   faTabletScreenButton,
@@ -95,6 +101,24 @@ const fa_icons = {
     component: FontAwesomeIcon,
     props: {
       icon: ["fa", "shield"],
+    },
+  },
+  restore: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "arrow-rotate-backward"],
+    },
+  },
+  data: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "download"],
+    },
+  },
+  add: {
+    component: FontAwesomeIcon,
+    props: {
+      icon: ["fa", "circle-plus"],
     },
   },
   copy: {

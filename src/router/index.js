@@ -35,7 +35,7 @@ const routes = [
     component: DatabaseView,
     meta: {
       license: true,
-      server: true,
+      server: false,
     },
   },
   {

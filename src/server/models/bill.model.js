@@ -19,6 +19,9 @@ module.exports = (Database, Sequelize) => {
       type: Sequelize.STRING,
       allowNull: false,
     },
+    datetime: {
+      type: Sequelize.DATE,
+    },
     barcode: {
       type: Sequelize.STRING,
       unique: true,

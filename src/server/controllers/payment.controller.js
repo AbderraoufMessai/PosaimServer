@@ -3,14 +3,18 @@ const model = DB.payments;
 
 async function updateProducts(items, type) {
   if (items) {
-    for (let { productId, qty } of items) {
+    for (let { productId, qty, price } of items) {
       await DB.products.findByPk(productId).then(async (product) => {
         if (type === "SALE") {
           qty = parseInt(product.qty) - parseInt(qty);
+          await DB.products.update({ qty }, { where: { id: productId } });
         } else {
           qty = parseInt(product.qty) + parseInt(qty);
+          await DB.products.update(
+            { qty, purchase_price: price },
+            { where: { id: productId } }
+          );
         }
-        await DB.products.update({ qty }, { where: { id: productId } });
       });
     }
   }
@@ -25,6 +29,7 @@ async function updateBill(id, personId, items, type, amount) {
           await DB.bills.update(item, { where: { id } });
         } else {
           item.status = "COMPLETE";
+          item.datetime = new Date();
           if (personId) {
             item.personId = personId;
           }
@@ -144,12 +149,14 @@ exports.create = (req, res) => {
   const amount = req.body.amount;
   const items = req.body.items;
   const type = req.body.type;
+  const datetime = new Date();
   if (amount > 0) {
     model
       .create({
         userId,
         billId,
         amount,
+        datetime,
       })
       .then((data) => {
         updateBill(billId, personId, items, type, amount)

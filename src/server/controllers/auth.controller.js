@@ -27,9 +27,7 @@ exports.login = (req, res) => {
       Token.update({ expired: true }, { where: { userId: user.id } })
         .then(() => {
           Token.create({ value: token, userId: user.id }).then(() => {
-            User.update({ last_login: Date.now() }, { where: { id: user.id } })
-              .then(() => {
-                User.findByPk(user.id, {
+            User.findByPk(user.id, {
                   attributes: [
                     "id",
                     "username",
@@ -37,25 +35,29 @@ exports.login = (req, res) => {
                     "is_active",
                     "is_superuser",
                     "createdAt",
-                    "updatedAt",
+                    "updatedAt"
                   ],
-                  include: [{ model: DB.profiles, as: "profile" }],
-                })
-                  .then((data) => {
-                    res.status(200).send({
-                      user: data,
-                      token: token,
-                    });
-                  })
-                  .catch((err) => {
-                    res.status(500).send({
-                      message: err.message || "Error retrieving",
-                    });
+                  include: [
+                    { model: DB.profiles, as: "profile" },
+                  ],
+              })
+              .then((data) => {
+                User.update({ last_login: Date.now() }, { where: { id: user.id } })
+                .then(() => {
+                  res.status(200).send({
+                    user: data,
+                    token: token,
                   });
+                })
+                .catch((err) => {
+                      res.status(500).send({
+                        message: err.message || "Error retrieving",
+                      });
+                });
               })
               .catch((err) => {
                 res.status(500).send({
-                  message: err.message || "Some error occurred.",
+                    message: err.message || "Some error occurred.",
                 });
               });
           });

@@ -36,7 +36,7 @@ module.exports = (Database, Sequelize) => {
       unique: true,
     },
     photo: {
-      type: Sequelize.TEXT,
+      type: Sequelize.BLOB,
     },
   });
 };

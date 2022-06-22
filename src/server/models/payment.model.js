@@ -4,5 +4,8 @@ module.exports = (Database, Sequelize) => {
       type: Sequelize.INTEGER,
       allowNull: false,
     },
+    datetime: {
+      type: Sequelize.DATE,
+    },
   });
 };

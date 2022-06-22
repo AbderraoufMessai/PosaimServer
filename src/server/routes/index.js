@@ -9,6 +9,7 @@ const routes = {
   paymentRoutes: require("./payment.routes"),
   dataRoutes: require("./data.routes"),
   administrationRoutes: require("./administration.routes"),
+  statsRoutes: require("./stats.routes"),
 };
 
 module.exports = routes;

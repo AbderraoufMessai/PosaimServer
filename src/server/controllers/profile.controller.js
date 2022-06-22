@@ -24,19 +24,11 @@ exports.findByPk = (req, res) => {
 exports.update = (req, res) => {
   const id = req.params.id;
   model
-    .update(req.body, {
-      where: { id: id },
-    })
-    .then((num) => {
-      if (num === 1) {
-        res.send({
-          message: "Updated successfully.",
-        });
-      } else {
-        res.send({
-          message: "Cannot update. Maybe Item was not found!",
-        });
-      }
+    .update(req.body, { where: { id: id } })
+    .then(() => {
+      res.status(200).send({
+        message: "Updated successfully.",
+      });
     })
     .catch((err) => {
       res.status(500).send({

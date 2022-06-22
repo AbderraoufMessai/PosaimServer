@@ -16,7 +16,7 @@ module.exports = (Database, Sequelize) => {
       type: Sequelize.STRING,
     },
     photo: {
-      type: Sequelize.TEXT,
+      type: Sequelize.BLOB,
     },
     location: {
       type: Sequelize.STRING,
@@ -34,6 +34,7 @@ module.exports = (Database, Sequelize) => {
     selling_price: {
       type: Sequelize.INTEGER,
       allowNull: false,
+      defaultValue: 0,
     },
     wholesale_price: {
       type: Sequelize.INTEGER,

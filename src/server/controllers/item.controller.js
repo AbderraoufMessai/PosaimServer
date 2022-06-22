@@ -115,23 +115,39 @@ exports.update = (req, res) => {
 exports.destroy = (req, res) => {
   const id = req.params.id;
   model
-    .destroy({
-      where: { id: id },
-    })
-    .then((num) => {
-      if (num === 1) {
-        updateBill(req.body.billId).then(() => {
-          res.send({
-            message: "Deleted successfully!",
+    .findByPk(id, {
+      include: [{model: DB.bills}]
+    }).then((data) => {
+      const bill = data.bill;
+      if (bill) {
+        model
+          .destroy({
+            where: { id: id },
+          })
+          .then((num) => {
+            if (num === 1) {
+              updateBill(bill.id).then(() => {
+                res.send({
+                  message: "Deleted successfully!",
+                });
+              });
+            } else {
+              res.send({
+                message: "Cannot delete item. Maybe was not found!",
+              });
+            }
+          })
+          .catch((err) => {
+            res.status(500).send({
+              message: err.message || "Could not delete",
+            });
           });
-        });
       } else {
         res.send({
-          message: "Cannot delete item. Maybe was not found!",
+          message: "Cannot delete item. err in bill!",
         });
       }
-    })
-    .catch((err) => {
+    }).catch((err) => {
       res.status(500).send({
         message: err.message || "Could not delete",
       });
