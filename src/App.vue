@@ -18,9 +18,11 @@
       class="rounded-b-xl"
     >
       <v-spacer />
-      <v-app-bar-title>
-        <v-icon left>$server</v-icon>
-        Posaim Server
+      <v-app-bar-title style="font-family: 'Neon', sans-serif">
+        <v-avatar size="40">
+          <v-img src="/images/server.png" contain />
+        </v-avatar>
+        Posaim
       </v-app-bar-title>
       <v-spacer />
       <v-speed-dial

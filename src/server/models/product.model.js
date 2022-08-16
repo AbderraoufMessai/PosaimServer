@@ -23,17 +23,14 @@ module.exports = (Database, Sequelize) => {
     },
     qty: {
       type: Sequelize.INTEGER,
-      allowNull: false,
       defaultValue: 0,
     },
     purchase_price: {
       type: Sequelize.INTEGER,
-      allowNull: false,
       defaultValue: 0,
     },
     selling_price: {
       type: Sequelize.INTEGER,
-      allowNull: false,
       defaultValue: 0,
     },
     wholesale_price: {

@@ -28,7 +28,7 @@
             />
           </v-list-item-content>
           <v-list-item-action>
-            <free-trial-dialog :disabled="!!isTrial" />
+            <free-trial-dialog :disabled="!!isTrial || trialRest < 0" />
           </v-list-item-action>
         </v-list-item>
         <v-divider v-if="!isActivated" />

@@ -15,12 +15,10 @@ module.exports = (Database, Sequelize) => {
     is_active: {
       type: Sequelize.BOOLEAN,
       defaultValue: false,
-      allowNull: false,
     },
     is_superuser: {
       type: Sequelize.BOOLEAN,
       defaultValue: false,
-      allowNull: false,
     },
   });
 };

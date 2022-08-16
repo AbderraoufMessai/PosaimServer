@@ -3,17 +3,14 @@ module.exports = (Database, Sequelize) => {
     total: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
-      allowNull: false,
     },
     rest: {
       type: Sequelize.INTEGER,
       defaultValue: 0,
-      allowNull: false,
     },
     status: {
       type: Sequelize.STRING,
       defaultValue: "INCOMPLETE",
-      allowNull: false,
     },
     type: {
       type: Sequelize.STRING,
